@@ -44,4 +44,33 @@ async function createCaptionController(req,res,next) {
    
 }
 
-module.exports = {createCaptionController}
+
+async function deleteCaptionController(req,res,next){
+ try {
+    const captionId = req.params.id;
+
+    // Step 1: Find caption
+    const caption = await captionmodel.findById(captionId);
+
+    if (!caption) {
+      return res.status(404).json({ message: "Caption not found" });
+    }
+
+    // Step 2: Ensure only creator can delete
+    if (caption.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "You are not authorized to delete this caption" });
+    }
+
+    // Step 3: Delete from DB
+    await captionmodel.findByIdAndDelete(captionId);
+
+    res.status(200).json({
+      message: "Caption deleted successfully"
+    });
+
+  } catch (error) {
+    next(new apiError(500, "Internal server error", error.message));
+  }
+}
+
+module.exports = {createCaptionController,deleteCaptionController}
