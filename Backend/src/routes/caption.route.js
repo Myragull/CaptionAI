@@ -12,4 +12,6 @@ router.post('/create', authMiddleware , upload.single("image"), captionControlle
 
 router.delete('/delete/:id',authMiddleware,captionController.deleteCaptionController)
 
-module.exports = router;
+router.patch('/save/:captionId',authMiddleware,captionController.saveCaptionController)
+
+module.exports = router;  

@@ -73,4 +73,38 @@ async function deleteCaptionController(req,res,next){
   }
 }
 
-module.exports = {createCaptionController,deleteCaptionController}
+async function saveCaptionController(req,res,next) {
+  try {
+    const { captionId } = req.params;
+    const userId = req.user.id; // from auth middleware
+
+    const captionDoc = await captionmodel.findById(captionId);
+    if (!captionDoc) {
+      return res.status(404).json({ message: "Caption not found" });
+    }
+
+    // check if already saved
+    const alreadySaved = captionDoc.savedBy.includes(userId);
+
+    if (alreadySaved) {
+      // unsave (remove userId)
+      captionDoc.savedBy.pull(userId);
+    } else {
+      // save (push userId)
+      captionDoc.savedBy.push(userId);
+    }
+
+    await captionDoc.save();
+
+    res.status(200).json({
+      message: alreadySaved ? "Caption unsaved" : "Caption saved",
+      captionDoc,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+module.exports = {createCaptionController,deleteCaptionController,saveCaptionController}
