@@ -1,46 +1,53 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
+import { successToast} from "../utils/toast";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// ✅ Zod schema for validation
+const loginSchema = z.object({
+  email: z
+    .string()
+    .email("Invalid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters"),
+});
 
 const LoginForm = () => {
-  const [user,setUser]=useState({
-    email: "",
-    password: "",
-  })
-
   const navigate = useNavigate();
-  
-const handleInput = (e) => {
-    let name = e.target.name;
-    let value = e.target.value;
 
-    setUser({
-      ...user,
-      [name]: value,
+      const {
+      register,
+      handleSubmit,
+      formState: { errors },
+      reset,
+    } = useForm({
+      resolver: zodResolver(loginSchema),
+      mode: "onBlur", // validate when field loses focus
     });
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log(user);
+
+  const onSubmit = async (data) => {
+ 
+    console.log(data);
     try {
       const response = await fetch(`http://localhost:3000/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(user),
+        body: JSON.stringify(data),
       });
       if (response.ok) {
         const res_data = await response.json();
-        alert("Login successfull");
-        setUser({ email: "", password: "" });
+       successToast("Login successfull!");
         console.log(res_data);
         navigate("/Home");
       }
       console.log(response);
     } catch (error) {
-      console.log("login", error);
+      console.log("login error", error);
     }
   };
 
@@ -61,7 +68,7 @@ const handleInput = (e) => {
             <div className="space-y-8 w-full px-4 sm:px-0">
               {/* form values */}
               <form
-                onSubmit={handleSubmit}
+                onSubmit={handleSubmit(onSubmit)}
                 className="registration-form space-y-4 w-full max-w-400 mx-auto"
               >
                 {/* Email Parent Container */}
@@ -75,10 +82,13 @@ const handleInput = (e) => {
                       placeholder="Email"
                       className="bg-transparent border border-[#2c2e33] placeholder:text-[#9ca3af] focus:text-[#ffffff] sm:text-sm rounded-[6px] focus:ring-2 focus:ring-[#ffffff] focus:outline-none block w-full p-2.5"
                       autoComplete="email"
-                      required
-                      value={user.email}
-                      onChange={handleInput}
+                      {...register("email")}
                     />
+                    {errors.email && (
+                      <p className="text-[#DC2626] text-sm mt-1">
+                        {errors.email.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -93,10 +103,13 @@ const handleInput = (e) => {
                       placeholder="Password"
                       className="bg-transparent border border-[#2c2e33] focus:text-[#ffffff] placeholder:text-[#9ca3af] sm:text-sm rounded-[6px] focus:ring-2 focus:ring-[#ffffff] focus:outline-none block w-full p-2.5"
                       autoComplete="new-password"
-                      required
-                      value={user.password}
-                      onChange={handleInput}
+                      {...register("password")}
                     />
+                    {errors.password && (
+                      <p className="text-[#DC2626] text-sm mt-1">
+                        {errors.password.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -119,7 +132,7 @@ const handleInput = (e) => {
                         paddingRight: "25px",
                       }}
                     >
-                      Create Account
+                      Login
                     </button>
                   </div>
                 </div>
