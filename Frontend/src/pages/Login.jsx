@@ -1,35 +1,31 @@
-import { Link,useNavigate } from "react-router-dom";
-import { successToast} from "../utils/toast";
+import { Link, useNavigate } from "react-router-dom";
+import { successToast } from "../utils/toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "../context/AuthContext";
 
 // ✅ Zod schema for validation
 const loginSchema = z.object({
-  email: z
-    .string()
-    .email("Invalid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
-      const {
-      register,
-      handleSubmit,
-      formState: { errors },
-      reset,
-    } = useForm({
-      resolver: zodResolver(loginSchema),
-      mode: "onBlur", // validate when field loses focus
-    });
-
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur", // validate when field loses focus
+  });
 
   const onSubmit = async (data) => {
- 
     console.log(data);
     try {
       const response = await fetch(`http://localhost:3000/api/auth/login`, {
@@ -37,13 +33,20 @@ const LoginForm = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // ← must add this
         body: JSON.stringify(data),
       });
       if (response.ok) {
         const res_data = await response.json();
-       successToast("Login successfull!");
+        successToast("Login successfull!");
+        // fetch user info immediately after login
+        const me = await fetch("http://localhost:3000/api/auth/session", {
+          credentials: "include",
+        });
+        const meData = await me.json();
+        setUser(meData.user);
         console.log(res_data);
-        navigate("/Home");
+        navigate("/HomePage/home");
       }
       console.log(response);
     } catch (error) {
@@ -145,7 +148,10 @@ const LoginForm = () => {
               >
                 <p className="font-medium text-neutral-6 text-[#9c9c9c] text-sm sm:text-base">
                   New to Caption AI?{" "}
-                  <Link to="/" className="font-medium text-[#dcdcdc] hover:text-[#f0eeee]">
+                  <Link
+                    to="/"
+                    className="font-medium text-[#dcdcdc] hover:text-[#f0eeee]"
+                  >
                     Create an account
                   </Link>
                 </p>

@@ -3,6 +3,7 @@ import { successToast} from "../utils/toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "../context/AuthContext";
 
 // ✅ Zod schema for validation
 const registerSchema = z.object({
@@ -22,6 +23,8 @@ const registerSchema = z.object({
 
 const Register = () => {
   const navigate = useNavigate();
+const { setUser } = useAuth();
+
     const {
     register,
     handleSubmit,
@@ -41,6 +44,7 @@ const Register = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // ← must add this
         body: JSON.stringify(data),
       });
       if (response.ok) {
@@ -48,8 +52,13 @@ const Register = () => {
         //  toast.success("Account Created successfully!");
         successToast("Account Created successfully!");
         reset();
+
+const me = await fetch("http://localhost:3000/api/auth/session", { credentials: "include" });
+  const meData = await me.json();
+  setUser(meData.user); // ✅ update context
+
         console.log(res_data);
-        navigate("/Home");
+        navigate("/HomePage/home");
       }
       console.log(response);
     } catch (error) {

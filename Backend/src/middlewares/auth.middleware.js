@@ -12,9 +12,7 @@ async function authMiddleware(req, res,next) {
 
     try{
 const decoded = jwt.verify(token, process.env.JWT_SECRET);
-const user = await userModel.findOne({
-    _id: decoded.id
-});
+const user = await userModel.findById(decoded.id).select("-password");
 req.user=user;
   next()
 
@@ -24,3 +22,5 @@ req.user=user;
 }
 
 module.exports = authMiddleware
+
+// this middel ware only cheacks and did not console any thing like user it fetch the user an did not return 

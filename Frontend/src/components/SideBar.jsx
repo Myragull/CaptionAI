@@ -1,85 +1,42 @@
 import { GoHome, GoHomeFill } from "react-icons/go";
-import { MdBookmarkBorder,MdBookmark } from "react-icons/md";
+import { MdBookmarkBorder, MdBookmark } from "react-icons/md";
 import { IoSettingsSharp, IoSettingsOutline } from "react-icons/io5";
 import { NavLink } from "react-router-dom";
 
 function SideBar() {
+  const links = [
+  { to: "/homepage/home", label: "Home", icon: GoHome, iconActive: GoHomeFill },
+  { to: "/homepage/bookmarks", label: "Bookmarks", icon: MdBookmarkBorder, iconActive: MdBookmark },
+  { to: "/homepage/settings", label: "Settings", icon: IoSettingsOutline, iconActive: IoSettingsSharp },
+];
+
+
   return (
-    <div className="CAI-Sidebar-Wrapper h-screen py-4 px-4 border border-amber-200">
-      {/* Switch alignment: center (default) → right at xl */}
-      <div className="CAI-Content border border-amber-400 max-w-[300px] flex flex-col items-end xl:items-end">
-        
-        {/* Logo + Nav */}
-        <div className="CAI-Top-links border border-amber-100 flex flex-col items-center xl:items-start justify-center">
-          <div className="CAI-Logo text-white text-3xl font-bold">CAI</div>
-          
-          {/* Nav links */}
-          <div className="CAI-Nav-Links mt-6 flex flex-col gap-4 items-center xl:items-start justify-center border border-amber-400">
-            
-            {/* Home */}
-            <NavLink
-              to="/home"
-              className={({ isActive }) =>
-                `flex items-center gap-2 hover:text-[#f0eeee] ${
-                  isActive ? "text-white" : "text-[#dcdcdc]"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive ? (
-                    <GoHomeFill className="text-3xl" />
-                  ) : (
-                    <GoHome className="text-3xl" />
-                  )}
-                  <span className="font-medium hidden xl:inline">Home</span>
-                </>
-              )}
-            </NavLink>
+    <div className="h-screen py-4 px-4 border-r border-r-[#2c2e33] flex flex-col items-center xl:items-start">
+      <div className="text-white text-3xl font-bold mb-6">CAI</div>
 
-            {/* Bookmarks */}
-            <NavLink
-              to="/bookmarks"
-              className={({ isActive }) =>
-                `flex items-center gap-2 hover:text-[#f0eeee] ${
-                  isActive ? "text-white" : "text-[#dcdcdc]"
-                }`
-              }
-            >
-              {({ isActive }) => (
+      <div className="flex flex-col gap-6 items-center xl:items-start">
+        {links.map((link) => (
+          <NavLink
+            key={link.to}
+            to={link.to}
+            className={({ isActive }) =>
+              `flex items-center gap-4 hover:text-[#f0eeee] ${
+                isActive ? "text-white" : "text-[#dcdcdc]"
+              }`
+            }
+          >
+            {({ isActive }) => {
+              const Icon = isActive ? link.iconActive : link.icon;
+              return (
                 <>
-                  {isActive ? (
-                    <MdBookmark className="text-3xl" />
-                  ) : (
-                    <MdBookmarkBorder className="text-3xl" />
-                  )}
-                  <span className="font-medium hidden xl:inline">Bookmarks</span>
+                  <Icon className="text-4xl" />
+                  <span className="font-semibold hidden xl:inline text-2xl">{link.label}</span>
                 </>
-              )}
-            </NavLink>
-
-            {/* Settings */}
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                `flex items-center gap-2 hover:text-[#f0eeee] ${
-                  isActive ? "text-white" : "text-[#dcdcdc]"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive ? (
-                    <IoSettingsOutline className="text-3xl" />
-                  ) : (
-                    <IoSettingsSharp className="text-3xl" />
-                  )}
-                  <span className="font-medium hidden xl:inline">Settings</span>
-                </>
-              )}
-            </NavLink>
-          </div>
-        </div>
+              );
+            }}
+          </NavLink>
+        ))}
       </div>
     </div>
   );

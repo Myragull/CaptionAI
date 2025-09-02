@@ -25,11 +25,21 @@ async function registerController(req, res, next) {
     });
 
     const token = jwt.sign({ id: User._id }, process.env.JWT_SECRET);
-    res.cookie("token", token);
+    res.cookie("token", token, {
+  httpOnly: true,       // secure from JS access
+  sameSite: "lax",      // allow sending in cross-site requests
+  secure: false,        // true if using HTTPS
+  maxAge: 1000 * 60 * 60 * 24, // 1 day
+});
 
     res.status(201).json({
       message: "User created successfully",
-      User,
+      user: {
+    id: User._id,
+    firstname: User.firstname,
+    lastname: User.lastname,
+    email: User.email
+  }
     });
   } catch (error) {
     next(new apiError(500, "Internal server error", error.message));
@@ -58,13 +68,21 @@ async function loginController(req, res,next) {
   }
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-  res.cookie("token", token);
+  res.cookie("token", token, {
+  httpOnly: true,       // secure from JS access
+  sameSite: "lax",      // allow sending in cross-site requests
+  secure: false,        // true if using HTTPS
+  maxAge: 1000 * 60 * 60 * 24, // 1 day
+});
 
   res.status(200).json({
     message: "User logged in successfully",
-    user: {
-      id: user._id,
-    },
+   user: {
+    id: User._id,
+    firstname: User.firstname,
+    lastname: User.lastname,
+    email: User.email
+  }
   });
   } catch (error) {
     next (new apiError(500,"Internal server error",error.message));
@@ -81,5 +99,32 @@ async function logoutController(req,res,next) {
   }
 }
 
+async function sessionController(req, res, next) {
+  try {
+     res.status(200).json({ 
+      user: { 
+        id: req.user._id,
+        email: req.user.email
+       } 
+      });
+  } catch (error) {
+    next(new apiError(401, "Unauthorized", error.message));
+  }
+}
 
-module.exports = { registerController,loginController,logoutController};
+async function meController(req,res,next) {
+   try {
+      res.status(200).json({ 
+        user: {
+          firstname:req.user.firstname,
+          lastname:req.user.lastname
+        }
+       });
+  } catch (error) {
+    next(new apiError(401, "Unauthorized", error.message));
+  }
+}
+
+module.exports = { registerController, loginController, logoutController,sessionController ,meController};
+
+
