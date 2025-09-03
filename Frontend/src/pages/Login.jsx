@@ -45,6 +45,7 @@ const LoginForm = () => {
         });
         const meData = await me.json();
         setUser(meData.user);
+        reset();
         console.log(res_data);
         navigate("/HomePage/home");
       }

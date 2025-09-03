@@ -12,10 +12,11 @@ function SideBar() {
 
 
   return (
-    <div className="h-screen py-4 px-4 border-r border-r-[#2c2e33] flex flex-col items-center xl:items-start">
+    <div className=" fixed top-0 min-h-screen  flex items-end border-r border-r-[#2c2e33] ">
+        <div className=" sidebar-content h-screen w-full py-6 px-4 flex flex-col items-start ">
       <div className="text-white text-3xl font-bold mb-6">CAI</div>
 
-      <div className="flex flex-col gap-6 items-center xl:items-start">
+      <div className="flex flex-col gap-6 w-full items-center xl:items-start">
         {links.map((link) => (
           <NavLink
             key={link.to}
@@ -39,6 +40,8 @@ function SideBar() {
         ))}
       </div>
     </div>
+      </div>
+    
   );
 }
 

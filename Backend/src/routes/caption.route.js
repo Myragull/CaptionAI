@@ -10,6 +10,8 @@ const upload = multer({storage:multer.memoryStorage()})
 
 router.post('/create', authMiddleware , upload.single("image"), captionController.createCaptionController)
 
+router.get('/getCaption', authMiddleware, captionController.getCaptionsController);
+
 router.delete('/delete/:id',authMiddleware,captionController.deleteCaptionController)
 
 router.patch('/save/:captionId',authMiddleware,captionController.saveCaptionController)

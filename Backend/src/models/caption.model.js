@@ -18,13 +18,13 @@ const captionSchema = new mongoose.Schema({
   createdBy:
    {
      type: mongoose.Schema.Types.ObjectId, 
-     ref: "users", 
+     ref: "user", 
      required: true 
     },
   savedBy: 
   [{ 
     type: mongoose.Schema.Types.ObjectId,
-     ref: "users" 
+     ref: "user" 
     }], // users who saved this caption
 }, { 
     timestamps: true 

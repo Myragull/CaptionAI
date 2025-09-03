@@ -45,6 +45,31 @@ async function createCaptionController(req,res,next) {
 }
 
 
+async function getCaptionsController(req, res, next) {
+  try {
+    const captions = await captionmodel
+      .find()
+      .populate("createdBy", "firstname lastname email")
+      .sort({ createdAt: -1 });
+
+    // Add isSaved for the logged-in user
+    const captionsWithSaved = captions.map(caption => {
+      return {
+        ...caption.toObject(),
+        isSaved: caption.savedBy.some(userId => userId.toString() === req.user._id.toString())
+      };
+    });
+
+    res.status(200).json({
+      message: "Captions fetched successfully",
+      captions: captionsWithSaved,
+    });
+  } catch (error) {
+    next(new apiError(500, "Failed to fetch captions", error.message));
+  }
+}
+
+
 async function deleteCaptionController(req,res,next){
  try {
     const captionId = req.params.id;
@@ -76,7 +101,7 @@ async function deleteCaptionController(req,res,next){
 async function saveCaptionController(req,res,next) {
   try {
     const { captionId } = req.params;
-    const userId = req.user.id; // from auth middleware
+    const userId = req.user._id; // from auth middleware
 
     const captionDoc = await captionmodel.findById(captionId);
     if (!captionDoc) {
@@ -107,4 +132,4 @@ async function saveCaptionController(req,res,next) {
 
 
 
-module.exports = {createCaptionController,deleteCaptionController,saveCaptionController}
+module.exports = {createCaptionController,deleteCaptionController,saveCaptionController,getCaptionsController}

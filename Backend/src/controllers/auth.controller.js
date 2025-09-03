@@ -17,14 +17,14 @@ async function registerController(req, res, next) {
       });
     }
 
-    const User = await userModel.create({
+    const user = await userModel.create({
       firstname,
       lastname,
       email,
       password: await bcrypt.hash(password, 10),
     });
 
-    const token = jwt.sign({ id: User._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     res.cookie("token", token, {
   httpOnly: true,       // secure from JS access
   sameSite: "lax",      // allow sending in cross-site requests
@@ -35,10 +35,10 @@ async function registerController(req, res, next) {
     res.status(201).json({
       message: "User created successfully",
       user: {
-    id: User._id,
-    firstname: User.firstname,
-    lastname: User.lastname,
-    email: User.email
+    id: user._id,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    email: user.email
   }
     });
   } catch (error) {
@@ -78,10 +78,10 @@ async function loginController(req, res,next) {
   res.status(200).json({
     message: "User logged in successfully",
    user: {
-    id: User._id,
-    firstname: User.firstname,
-    lastname: User.lastname,
-    email: User.email
+    id: user._id,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    email: user.email
   }
   });
   } catch (error) {
@@ -116,8 +116,10 @@ async function meController(req,res,next) {
    try {
       res.status(200).json({ 
         user: {
-          firstname:req.user.firstname,
-          lastname:req.user.lastname
+           id: req.user._id,
+          firstname: req.user.firstname,
+          lastname: req.user.lastname,
+          email: req.user.email
         }
        });
   } catch (error) {
