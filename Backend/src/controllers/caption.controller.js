@@ -126,7 +126,7 @@ async function saveCaptionController(req,res,next) {
       captionDoc,
     });
   } catch (error) {
-    next(error);
+        next(new apiError(500, "Internal server error", error.message));
   }
 };
 
