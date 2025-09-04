@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../context/AuthContext";
+import api from '../utils/api'
 
 // ✅ Zod schema for validation
 const loginSchema = z.object({
@@ -27,33 +28,23 @@ const LoginForm = () => {
 
   const onSubmit = async (data) => {
     console.log(data);
-    try {
-      const response = await fetch(`http://localhost:3000/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // ← must add this
-        body: JSON.stringify(data),
-      });
-      if (response.ok) {
-        const res_data = await response.json();
-        successToast("Login successfull!");
-        // fetch user info immediately after login
-        const me = await fetch("http://localhost:3000/api/auth/session", {
-          credentials: "include",
-        });
-        const meData = await me.json();
-        setUser(meData.user);
-        reset();
-        console.log(res_data);
-        navigate("/HomePage/home");
-      }
-      console.log(response);
-    } catch (error) {
-      console.log("login error", error);
+  try {
+    const response = await api.post("/auth/login", data); // ✅ no need for headers, api handles it
+    if (response.status === 200) {
+      successToast("Login successful!");
+
+      // fetch user info
+      const me = await api.get("/auth/session");
+      setUser(me.data.user);
+
+      reset();
+      navigate("/HomePage/home");
     }
-  };
+  } catch (error) {
+    console.log("login error", error);
+  }
+};
+
 
   return (
     <div className="registration-container relative min-h-screen overflow-hidden bg-[#16171a] flex flex-col items-center justify-center py-24 px-4 sm:px-6 lg:px-8 text-[#ffffff]">

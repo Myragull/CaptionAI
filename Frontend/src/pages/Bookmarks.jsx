@@ -1,24 +1,21 @@
 import { useEffect, useState } from "react";
 import PostCard from "../components/PostCard";
 import { useAuth } from "../context/AuthContext";
+import api from '../utils/api'
+
 
 function Bookmarks() {
   const [savedPosts, setSavedPosts] = useState([]);
   const { user } = useAuth();
 
-  useEffect(() => {
+   useEffect(() => {
     async function fetchSaved() {
       try {
-        const res = await fetch("http://localhost:3000/api/caption/getCaption", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        const data = await res.json();
-        const saved = data.captions.filter(caption => caption.isSaved);
+        const res = await api.get("/caption/getCaption"); // ✅ use api
+        const saved = res.data.captions.filter((caption) => caption.isSaved);
         setSavedPosts(saved);
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching saved posts:", error);
       }
     }
     fetchSaved();
@@ -27,20 +24,18 @@ function Bookmarks() {
   // ✅ toggle save from bookmarks
   async function handleToggleSave(postId) {
     try {
-      const res = await fetch(`http://localhost:3000/api/caption/save/${postId}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await res.json();
+      const res = await api.patch(`/caption/save/${postId}`); // ✅ use api
+      const updated = res.data.captionDoc;
 
-      setSavedPosts(prev =>
-        prev.map(p =>
-          p._id === postId ? { ...p, isSaved: data.captionDoc.savedBy.includes(user._id) } : p
+      setSavedPosts((prev) =>
+        prev.map((p) =>
+          p._id === postId
+            ? { ...p, isSaved: updated.savedBy.includes(user._id) }
+            : p
         )
       );
     } catch (err) {
-      console.log(err);
+      console.error("Error toggling save:", err);
     }
   }
 

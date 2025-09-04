@@ -1,5 +1,7 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
+import api from '../utils/api'
+
 
 const AuthContext = createContext();
 
@@ -8,18 +10,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Check if user is logged in on mount
-  useEffect(() => {
+useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/auth/me", {
-          credentials: "include", // send cookies
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
+        const res = await api.get("/auth/me"); // ✅ no hardcoded baseURL
+        setUser(res.data.user); // backend should return { user: {...} }
       } catch (err) {
         setUser(null);
       } finally {

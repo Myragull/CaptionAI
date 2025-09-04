@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import api from '../utils/api'
 import { successToast } from "../utils/toast";
 import { FaArrowLeft } from "react-icons/fa6";
 import { BiLogOut } from "react-icons/bi";
@@ -10,20 +11,15 @@ function Settings() {
   const { setUser } = useAuth();
 
   const handleLogout = async () => {
-    try {
-      const res = await fetch("http://localhost:3000/api/auth/logout", {
-        method: "POST",
-        credentials: "include", // send cookies
-      });
-
-      if (res.ok) {
-        setUser(null); // clear context
-        successToast("Logged out successfully!");
-        navigate("/login");
-      }
+        try {
+      await api.post("/auth/logout");
+      setUser(null);
+      successToast("Logged out successfully!");
+      navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
     }
+
   };
 
   return (

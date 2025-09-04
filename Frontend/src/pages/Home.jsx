@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import PostCard from "../components/PostCard";
 import { FaPlus } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext";
+import api from '../utils/api'
 
 
 function Home() {
@@ -11,70 +12,48 @@ function Home() {
 
   // fetch posts from backend
   useEffect(() => {
-  async function fetchPosts() {
-    try {
-      const res = await fetch("http://localhost:3000/api/caption/getCaption", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!res.ok) throw new Error("Failed to fetch posts");
-
-      const data = await res.json();
-      setPosts(data.captions || []); // use captions, not posts
-    } catch (err) {
-      console.error(err);
+    async function fetchPosts() {
+      try {
+        const res = await api.get("/caption/getCaption"); // ✅ use api
+        setPosts(res.data.captions || []);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
+      }
     }
-  }
-  fetchPosts();
-}, []);
-
+    fetchPosts();
+  }, []);
 
 // handle image upload
-  const handleImageUpload = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+ const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const formData = new FormData();
-  formData.append("image", file);
+    const formData = new FormData();
+    formData.append("image", file);
 
-  try {
-    const res = await fetch("http://localhost:3000/api/caption/create", {
-      method: "POST",
-      body: formData,
-      credentials: "include", // same as withCredentials: true
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to upload image");
+    try {
+      const res = await api.post("/caption/create", formData); // ✅ use api
+      setPosts((prev) => [res.data.caption, ...prev]);
+    } catch (err) {
+      console.error("Upload error:", err);
     }
-
-   const data = await res.json();
-setPosts((prev) => [data.caption, ...prev]); 
-  } catch (err) {
-    console.error("Upload error:", err);
-  }
-};
-
+  };
 
   // toggle save
-  async function handleToggleSave(postId) {
+async function handleToggleSave(postId) {
     try {
-      const res = await fetch(`http://localhost:3000/api/caption/save/${postId}`, {
-        method: "PATCH",
-        credentials: "include", // include cookies
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-       const data = await res.json();
+      const res = await api.patch(`/caption/save/${postId}`); // ✅ use api
+      const updated = res.data.captionDoc;
 
-    setPosts(posts.map(p =>
-      p._id === postId ? { ...p, isSaved: data.captionDoc.savedBy.includes(user._id) } : p
-    ));
-
+      setPosts((prev) =>
+        prev.map((p) =>
+          p._id === postId
+            ? { ...p, isSaved: updated.savedBy.includes(user._id) }
+            : p
+        )
+      );
     } catch (error) {
-      console.log(error);
+      console.error("Save error:", error);
     }
   }
 
