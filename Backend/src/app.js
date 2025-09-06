@@ -6,7 +6,10 @@ const errorMiddleware = require("../src/middlewares/error.middleware")
 const cors = require('cors');
 
 const corsOptions={
-    origin:"http://localhost:5173",
+    origin:[
+        "http://localhost:5173",
+        "https://captionai-tj35.onrender.com/"
+    ],
     methods:"GET,PUT,DELETE,POST,PATCH,HEAD",
     credentials:true
 }
