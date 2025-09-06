@@ -26,10 +26,10 @@ async function registerController(req, res, next) {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
     res.cookie("token", token, {
-  httpOnly: true,       // secure from JS access
-  sameSite: "strict",      // allow sending in http only requests
-  secure: true,        // true if using HTTPS
-  maxAge: 1000 * 60 * 60 * 24, // 1 day
+httpOnly: true,                // JS on frontend can’t access it
+    secure: true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24,   // 1 day      // true if using HTTPS
 });
 
     res.status(201).json({
@@ -69,10 +69,10 @@ async function loginController(req, res,next) {
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
   res.cookie("token", token, {
-  httpOnly: true,       // secure from JS access
-  sameSite: "strict",      
-  secure: true,        // true if using HTTPS
-  maxAge: 1000 * 60 * 60 * 24, // 1 day
+  httpOnly: true,                // JS on frontend can’t access it
+    secure: true,
+    sameSite:none,
+    maxAge: 1000 * 60 * 60 * 24,   // 1 day       // true if using HTTPS
 });
 
   res.status(200).json({

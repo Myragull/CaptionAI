@@ -2,7 +2,7 @@ const generateCaption = require("../service/ai.service");
 const captionmodel = require("../models/caption.model");
 const apiError = require("../utils/apiError");
 const uploadFile = require("../service/storage.service");
-const extractCaptionAndHashtags = require("../utils/extract.helper");
+const extractCaptionAndHashtags = require("../utils/extract.utils");
 const {v4:uuidv4} = require("uuid")
 
 
