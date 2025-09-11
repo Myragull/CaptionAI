@@ -1,30 +1,24 @@
 // components/PostCard.jsx
 import { MdBookmarkBorder, MdBookmark } from "react-icons/md";
+import { useState, memo } from "react";
+import Avatar from "./Avatar";
 
-function PostCard({ post, onToggleSave }) {
+// Memoized PostCard component to prevent unnecessary re-renders
+const PostCard = memo(function PostCard({ post, onToggleSave }) {
+  const [imageLoaded, setImageLoaded] = useState(false);
   const {
     createdBy,
     captionText,
     hashtags = [],
     imageUrl,
     createdAt,
-    isSaved
+    isSaved,
   } = post;
-
-    // if (!createdBy) return null; // or a placeholder/skeleton
-
-  // safeguard in case createdBy is missing
-  const initials = createdBy
-  ? `${createdBy.firstname?.[0]?.toUpperCase() || ""}${createdBy.lastname?.[0]?.toUpperCase() || ""}` || "..."
-  : "...";
-console.log(createdBy)
 
   return (
     <div className="flex gap-3 p-4 border-b">
-      {/* Left column: user initials */}
-      <div className="w-10 h-10 flex items-center justify-center bg-[#16171a] rounded-full font-bold text-white border border-[#2c2e33]">
-        {initials}
-      </div>
+      {/* Left column: user avatar - using optimized component */}
+      <Avatar user={createdBy} size="md" />
 
       {/* Right column */}
       <div className="flex-1">
@@ -43,13 +37,30 @@ console.log(createdBy)
           ))}
         </div>
 
-        {/* Uploaded image */}
+        {/* Uploaded image - further optimized loading */}
         {imageUrl && (
-          <img
-            src={imageUrl}
-            alt="uploaded"
-            className="mt-2 rounded-lg max-h-80 object-cover"
-          />
+          <div className="mt-2 rounded-lg max-h-80 relative overflow-hidden">
+            {!imageLoaded && (
+              <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg"></div>
+            )}
+            <img
+              src={imageUrl}
+              alt="Post"
+              loading="lazy"
+              width="100%"
+              height="auto"
+              decoding="async"
+              fetchPriority="low"
+              className={`rounded-lg max-h-80 object-cover ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              } transition-opacity duration-300`}
+              onLoad={() => {
+                window.requestAnimationFrame(() => {
+                  setImageLoaded(true);
+                });
+              }}
+            />
+          </div>
         )}
 
         {/* Footer: date + bookmark */}
@@ -67,7 +78,6 @@ console.log(createdBy)
       </div>
     </div>
   );
-}
+});
 
-
-export default PostCard
+export default PostCard;

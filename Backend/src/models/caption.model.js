@@ -19,8 +19,14 @@ const captionSchema = new mongoose.Schema({
    {
      type: mongoose.Schema.Types.ObjectId, 
      ref: "user", 
-     required: true 
+     required: true ,
+     index: true // Add index
     },
+     createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true // Add index for sorting
+  },
   savedBy: 
   [{ 
     type: mongoose.Schema.Types.ObjectId,

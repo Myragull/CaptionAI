@@ -12,6 +12,7 @@ const mongoose = require('mongoose');
         type: String,
         required:true,
         unique:true,
+        index: true // Add index for sortin
     },
     password:{
         type: String,

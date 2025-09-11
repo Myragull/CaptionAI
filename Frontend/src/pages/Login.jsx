@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../context/AuthContext";
-import api from '../utils/api'
+import api from "../utils/api";
+import { useState } from "react";
 
 // ✅ Zod schema for validation
 const loginSchema = z.object({
@@ -15,6 +16,7 @@ const loginSchema = z.object({
 const LoginForm = () => {
   const navigate = useNavigate();
   const { setUser } = useAuth();
+  const [loginError, setLoginError] = useState("");
 
   const {
     register,
@@ -28,23 +30,93 @@ const LoginForm = () => {
 
   const onSubmit = async (data) => {
     console.log(data);
-  try {
-    const response = await api.post("/auth/login", data); // ✅ no need for headers, api handles it
-    if (response.status === 200) {
-      successToast("Login successful!");
+    setLoginError(""); // Clear previous errors
+    try {
+      const response = await api.post("/auth/login", data); // ✅ no need for headers, api handles it
+      if (response.status === 200) {
+        successToast("Login successful!");
 
-      // fetch user info
-      const me = await api.get("/auth/session");
-      setUser(me.data.user);
+        // fetch user info
+        const me = await api.get("/auth/session");
+        setUser(me.data.user);
 
-      reset();
-      navigate("/HomePage/home");
+        reset();
+        navigate("/HomePage/home");
+      }
+    } catch (error) {
+      console.log("login error", error);
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        setLoginError(error.response.data.message);
+      } else {
+        setLoginError("Login failed. Please try again.");
+      }
     }
-  } catch (error) {
-    console.log("login error", error);
-  }
-};
+  };
 
+  // Add to handleImageUpload in Home.jsx
+  const compressImage = async (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = Math.round((width * MAX_HEIGHT) / height);
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              resolve(
+                new File([blob], file.name, {
+                  type: "image/jpeg",
+                  lastModified: Date.now(),
+                })
+              );
+            },
+            "image/jpeg",
+            0.8
+          ); // 80% quality
+        };
+      };
+    });
+  };
+
+  // Then use it before upload
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const optimizedFile = await compressImage(file);
+    const formData = new FormData();
+    formData.append("image", optimizedFile);
+
+    // Rest of your upload code...
+  };
 
   return (
     <div className="registration-container relative min-h-screen overflow-hidden bg-[#16171a] flex flex-col items-center justify-center py-24 px-4 sm:px-6 lg:px-8 text-[#ffffff]">
@@ -148,6 +220,15 @@ const LoginForm = () => {
                   </Link>
                 </p>
               </div>
+
+              {/* Error message box */}
+              {loginError && (
+                <div className="error-container mt-4 flex justify-center">
+                  <div className="error-box p-3 rounded-lg bg-[#303032]  text-[#dcdcdc] text-center w-full sm:w-[430px]">
+                    {loginError}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

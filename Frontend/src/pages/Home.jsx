@@ -39,21 +39,37 @@ function Home() {
     }
   };
 
-  // toggle save
-async function handleToggleSave(postId) {
+  // toggle save with optimistic updates
+  async function handleToggleSave(postId) {
     try {
-      const res = await api.patch(`/caption/save/${postId}`); // ✅ use api
-      const updated = res.data.captionDoc;
-
-      setPosts((prev) =>
-        prev.map((p) =>
-          p._id === postId
-            ? { ...p, isSaved: updated.savedBy.includes(user._id) }
+      // Find the post
+      const postIndex = posts.findIndex(p => p._id === postId);
+      if (postIndex === -1) return Promise.reject("Post not found");
+      
+      // Update optimistically
+      const updatedPosts = [...posts];
+      updatedPosts[postIndex] = {
+        ...updatedPosts[postIndex],
+        isSaved: !updatedPosts[postIndex].isSaved
+      };
+      setPosts(updatedPosts);
+      
+      // Make the API call
+      const res = await api.patch(`/caption/save/${postId}`);
+      return res;
+    } catch (error) {
+      console.error("Save error:", error);
+      
+      // Revert the optimistic update on error
+      setPosts(prev => 
+        prev.map(p => 
+          p._id === postId 
+            ? { ...p, isSaved: !p.isSaved } 
             : p
         )
       );
-    } catch (error) {
-      console.error("Save error:", error);
+      
+      throw error;
     }
   }
 
